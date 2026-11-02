@@ -96,10 +96,17 @@ docs/                       PROTOCOL.md, ROBLOX-INTEGRATION.md, ARCHITECTURE.md
 
 ## Honest status
 
-- The desktop app is complete source; it has **not** been compiled in the environment that produced
-  this commit (a Linux container without the .NET SDK or NuGet access). Run `build.cmd` on Windows
-  or let the CI workflow compile it; the source was validated with a C# parser plus XAML resource and
-  binding-path checkers, but a real `dotnet build` is the final word.
+**Build:** green on `windows-latest` — `dotnet restore`, `dotnet build -c Release` and
+`dotnet publish -r win-x64` all pass (`Actions` tab → `build` → latest run).
+
+- The desktop app **compiles clean on Windows**: the `build` workflow restores, builds the solution in
+  Release and publishes `win-x64` on a `windows-latest` runner (commit `App: import System.IO` and
+  everything after it are green). The first Linux-authored commit had two real errors — a
+  `SupportedOSPlatformVersion` that exceeded the target platform version, and a missing
+  `using System.IO` (the WPF SDK drops it so `System.IO.Path` cannot clash with `Shapes.Path`) — both
+  fixed and re-verified by CI. The build artifact `DrivenTestEngine-win-x64` is attached to the run.
+- The app has not been *run* against a live testing service, because that service is yours and does
+  not exist yet. Every screen states that plainly instead of showing invented numbers.
 - The protocol's authentication half is implemented twice (C# client, Node reference server) and the
   reference server's 30-assertion self-test passes, including the documented signing vector.
 - Test **execution** is not included. `POST /v1/tests/run` in the reference server answers
