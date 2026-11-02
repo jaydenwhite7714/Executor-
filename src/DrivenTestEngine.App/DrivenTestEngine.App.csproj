@@ -10,7 +10,6 @@
     <AssemblyTitle>Driven Test Engine</AssemblyTitle>
     <Description>Overlay console for the Driven Football server-side testing system.</Description>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
