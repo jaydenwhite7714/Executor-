@@ -22,9 +22,20 @@ internal sealed class LocalReferenceService : IDisposable
             return "The local service credential could not be read from Windows DPAPI. Open the Connection settings and re-enter or regenerate the local profile.";
         }
 
-        if (CanConnect())
+        if (_process is { HasExited: false })
         {
             return null;
+        }
+
+        if (_process is not null)
+        {
+            _process.Dispose();
+            _process = null;
+        }
+
+        if (CanConnect())
+        {
+            return "Another process is already listening on 127.0.0.1:8791. For security, DTE will not replace its credentials; stop that service and restart DTE so it can launch its own provisioned local service.";
         }
 
         var entryPoint = Path.Combine(AppContext.BaseDirectory, "server", "src", "server.mjs");
