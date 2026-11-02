@@ -97,6 +97,9 @@ public sealed class AppServices : IAsyncDisposable
         }
 
         current.AutoConnect = true;
+        // The loopback reference service is not proof of a Roblox account; a stale expected
+        // production UserId would correctly reject its demo handshake and strand the user.
+        current.ExpectedRobloxUserId = null;
         if (string.IsNullOrWhiteSpace(current.ProtectedSecret)
             || string.Equals(settings.ReadSecret(), "dev-secret-change-me-0123456789abcdef", StringComparison.Ordinal))
         {

@@ -5,11 +5,27 @@ using DrivenTestEngine.App.ViewModels;
 using DrivenTestEngine.Core.Security;
 using DrivenTestEngine.Core.Tests;
 using DrivenTestEngine.Core.Transport;
+using DrivenTestEngine.Core.Settings;
+using DrivenTestEngine.Core.Util;
 
 static void Require(bool condition, string message)
 {
     if (!condition) throw new InvalidOperationException(message);
 }
+
+// Simulate an upgraded installation from the old public demo profile, including a stale
+// expected Roblox user id that cannot be verified by a local reference server.
+AppPaths.EnsureCreated();
+var oldSettings = new SettingsService(AppPaths.SettingsFile);
+oldSettings.Load();
+oldSettings.Update(s =>
+{
+    s.ServerUrl = "http://127.0.0.1:8791";
+    s.KeyId = "dte-dev-key";
+    s.ExpectedRobloxUserId = "42424242";
+    s.AutoConnect = false;
+});
+Require(oldSettings.WriteSecret("dev-secret-change-me-0123456789abcdef"), "Could not seed legacy profile for migration test.");
 
 await using var appServices = AppServices.Create();
 var profile = appServices.Settings.Current;
@@ -17,7 +33,9 @@ var secret = appServices.Settings.ReadSecret();
 Require(profile.ServerUrl == "http://127.0.0.1:8791", "First-run profile did not select loopback service.");
 Require(profile.KeyId.StartsWith("dte-local-", StringComparison.Ordinal), "First-run key id was not generated.");
 Require(profile.AutoConnect, "First-run auto-connect was not enabled.");
-Require(!string.IsNullOrWhiteSpace(secret), "DPAPI-protected first-run secret could not be read back.");
+Require(profile.ExpectedRobloxUserId is null, "Local preview retained an unverifiable expected Roblox UserId.");
+Require(profile.KeyId != "dte-dev-key", "Legacy public demo key was not rotated.");
+Require(!string.IsNullOrWhiteSpace(secret) && secret != "dev-secret-change-me-0123456789abcdef",  "DPAPI-protected first-run secret could not be read back.");
 Console.WriteLine("PASS first-run key/secret provisioning and DPAPI read-back");
 using var service = new LocalReferenceService();
 
