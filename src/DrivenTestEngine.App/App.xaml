@@ -1,0 +1,31 @@
+<Application x:Class="DrivenTestEngine.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:inf="clr-namespace:DrivenTestEngine.App.Infrastructure"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Palette.xaml" />
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+                <ResourceDictionary Source="Themes/Templates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <inf:BoolToVisibilityConverter x:Key="BoolVisibility" />
+            <inf:BoolToVisibilityConverter x:Key="BoolVisibilityInverse" Invert="True" />
+            <inf:InverseBoolConverter x:Key="InverseBool" />
+            <inf:StringToVisibilityConverter x:Key="StringVisibility" />
+            <inf:StringToVisibilityConverter x:Key="StringVisibilityInverse" Invert="True" />
+            <inf:ZeroToVisibilityConverter x:Key="ZeroVisibility" />
+            <inf:NullToVisibilityConverter x:Key="NullVisibility" />
+            <inf:DetectionLevelBrushConverter x:Key="LevelBrush" />
+            <inf:RunStateBrushConverter x:Key="RunStateBrush" />
+            <inf:RunStateTextConverter x:Key="RunStateText" />
+            <inf:ConnectionStateBrushConverter x:Key="ConnectionStateBrush" />
+            <inf:SeverityBrushConverter x:Key="SeverityBrush" />
+            <inf:IntegrityBrushConverter x:Key="IntegrityBrush" />
+            <inf:IntegrityIconConverter x:Key="IntegrityIcon" />
+            <inf:NullableNumberConverter x:Key="NumberText" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

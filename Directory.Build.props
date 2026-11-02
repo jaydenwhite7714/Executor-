@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Allows restoring/compiling the Windows-targeted projects from a non-Windows build agent. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Company>Driven Football</Company>
+    <Product>Driven Test Engine</Product>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <DebugType>portable</DebugType>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+</Project>

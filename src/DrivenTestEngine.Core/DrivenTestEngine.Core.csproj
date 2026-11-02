@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>DrivenTestEngine.Core</RootNamespace>
+    <AssemblyName>DrivenTestEngine.Core</AssemblyName>
+    <!-- No third-party packages: the whole engine is built on the shared framework so it
+         restores and builds on a clean offline Windows machine. -->
+  </PropertyGroup>
+
+</Project>

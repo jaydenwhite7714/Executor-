@@ -1,0 +1,229 @@
+<UserControl x:Class="DrivenTestEngine.App.Views.ConnectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:inf="clr-namespace:DrivenTestEngine.App.Infrastructure"
+             mc:Ignorable="d"
+             d:DesignWidth="420"
+             d:DesignHeight="720">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="14,12,14,18">
+
+            <!-- ================= Session status ================= -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                <StackPanel>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                     Fill="{Binding State, Converter={StaticResource ConnectionStateBrush}}" />
+                            <TextBlock Text="{Binding StateText}" Style="{StaticResource Text.Title}" Margin="9,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Border Style="{StaticResource Chip}" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding StatusPillText}"
+                                       Style="{StaticResource Text.Caption}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding State, Converter={StaticResource ConnectionStateBrush}}" />
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Text="{Binding StatusDetail}" Style="{StaticResource Text.Body}" Margin="0,9,0,0" />
+
+                    <Border CornerRadius="6" Padding="9,7" Margin="0,9,0,0" Background="#1AF87171"
+                            Visibility="{Binding HasError, Converter={StaticResource BoolVisibility}}">
+                        <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource Brush.Danger}" />
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- ================= Endpoint ================= -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="AUTHENTICATED ENDPOINT" Style="{StaticResource Text.Section}" />
+
+                    <TextBlock Text="Server URL" Style="{StaticResource Text.Caption}" Margin="0,4,0,4" />
+                    <TextBox Style="{StaticResource Input.Text}"
+                             Text="{Binding ServerUrl, UpdateSourceTrigger=LostFocus}"
+                             ToolTip="Base URL of your own testing service, e.g. https://dte.yourdomain.dev/" />
+
+                    <Grid Margin="0,9,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Key id" Style="{StaticResource Text.Caption}" Margin="0,0,0,4" />
+                            <TextBox Style="{StaticResource Input.Text}"
+                                     Text="{Binding KeyId, UpdateSourceTrigger=LostFocus}"
+                                     ToolTip="Identifier of the signing key issued to your developer account." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Signing secret" Style="{StaticResource Text.Caption}" Margin="0,0,0,4" />
+                            <PasswordBox inf:PasswordBoxBinder.BoundPassword="{Binding Secret, Mode=TwoWay}" ToolTip="HMAC-SHA256 secret. Stored with Windows DPAPI." />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="{Binding SecretHint}" Style="{StaticResource Text.Caption}" Margin="0,7,0,0"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding SecretHint, Converter={StaticResource StringVisibility}}" />
+
+                    <TextBlock Text="Expected Roblox user id (optional)" Style="{StaticResource Text.Caption}" Margin="0,9,0,4" />
+                    <TextBox Style="{StaticResource Input.Text}"
+                             Text="{Binding ExpectedUserId, UpdateSourceTrigger=LostFocus}"
+                             ToolTip="When set, the handshake is refused unless the server reports this account." />
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Connect" Style="{StaticResource Button.Primary}" Command="{Binding ConnectCommand}" MinWidth="86" />
+                        <Button Grid.Column="2" Content="Disconnect" Style="{StaticResource Button.Ghost}" Command="{Binding DisconnectCommand}" />
+                        <Button Grid.Column="4" Content="Probe" Style="{StaticResource Button.Ghost}" Command="{Binding TestConnectionCommand}" ToolTip="Signed health check only — no session is opened." />
+                    </Grid>
+
+                    <TextBlock Text="{Binding ProbeText}" TextWrapping="Wrap" FontSize="11" Margin="0,9,0,0"
+                               Foreground="{StaticResource Brush.TextSecondary}"
+                               Visibility="{Binding HasProbe, Converter={StaticResource BoolVisibility}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- ================= Handshake result ================= -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10"
+                    Visibility="{Binding HasSession, Converter={StaticResource BoolVisibility}}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="VERIFIED SESSION" Style="{StaticResource Text.Section}" />
+                        <TextBlock Text="{Binding DeveloperBadgeText}" HorizontalAlignment="Right" FontSize="9.5" FontWeight="Bold"
+                                   Foreground="{StaticResource Brush.Success}" />
+                    </Grid>
+
+                    <Grid Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Account" Style="{StaticResource Text.Caption}" />
+                            <TextBlock Text="{Binding AccountText}" FontSize="11.5" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                            <TextBlock Text="Token expires" Style="{StaticResource Text.Caption}" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding ExpiryText}" Style="{StaticResource Text.Mono}" HorizontalAlignment="Right" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Style="{StaticResource Divider}" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Place" Style="{StaticResource Text.Caption}" />
+                            <TextBlock Text="{Binding PlaceText}" Style="{StaticResource Text.Mono}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Server instance" Style="{StaticResource Text.Caption}" />
+                            <TextBlock Text="{Binding InstanceText}" Style="{StaticResource Text.Mono}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Session id" Style="{StaticResource Text.Caption}" Margin="0,8,0,2" />
+                    <TextBlock Text="{Binding SessionIdText}" Style="{StaticResource Text.Mono}" TextTrimming="CharacterEllipsis" />
+
+                    <TextBlock Text="Granted capabilities" Style="{StaticResource Text.Caption}" Margin="0,9,0,5" />
+                    <ItemsControl ItemsSource="{Binding Capabilities}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Chip}" Margin="0,0,5,5">
+                                    <TextBlock Text="{Binding}" Style="{StaticResource Text.Caption}" Foreground="{StaticResource Brush.TextSecondary}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- ================= Overlay preferences ================= -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="OVERLAY" Style="{StaticResource Text.Section}" />
+
+                    <Grid Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Keep on top" FontSize="11.5" />
+                            <TextBlock Text="Normal topmost window. It never attaches to or reads from Roblox." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleButton Grid.Column="1" Style="{StaticResource Toggle.Switch}" IsChecked="{Binding KeepOnTop}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Connect on launch" FontSize="11.5" />
+                            <TextBlock Text="Handshake automatically when the overlay opens." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleButton Grid.Column="1" Style="{StaticResource Toggle.Switch}" IsChecked="{Binding AutoConnect}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Auto-scroll logs" FontSize="11.5" />
+                            <TextBlock Text="Pin the detection log to the newest entry." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleButton Grid.Column="1" Style="{StaticResource Toggle.Switch}" IsChecked="{Binding AutoScrollLogs}" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Reduce motion" FontSize="11.5" />
+                            <TextBlock Text="Turn off page transitions and switch easing." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleButton Grid.Column="1" Style="{StaticResource Toggle.Switch}" IsChecked="{Binding ReduceMotion}" VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ================= Security note ================= -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="HOW THIS LINK IS SECURED" Style="{StaticResource Text.Section}" />
+                    <TextBlock Style="{StaticResource Text.Body}" FontSize="11">
+                        Every request is signed with HMAC-SHA256 over method, path, timestamp, nonce and body hash.
+                        The server must verify the signature, reject replayed nonces and only accept a developer
+                        account inside a private test session. Test actions never touch the Roblox client —
+                        they are requests your own game server executes and reports back.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

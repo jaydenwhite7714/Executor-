@@ -1,0 +1,126 @@
+<UserControl x:Class="DrivenTestEngine.App.Views.AntiCheatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="420"
+             d:DesignHeight="720">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="14,12,14,18">
+
+            <Grid Margin="0,0,0,8">
+                <TextBlock Text="ANTI-CHEAT MONITOR" Style="{StaticResource Text.Section}" Margin="0" VerticalAlignment="Center" />
+                <Button Content="Refresh" Style="{StaticResource Button.Tiny}" HorizontalAlignment="Right"
+                        Command="{Binding RefreshCommand}" />
+            </Grid>
+
+            <!-- server monitoring -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                <StackPanel>
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="Server-side monitoring" FontSize="12" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding MonitoringLabel}" Style="{StaticResource Text.Caption}" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <Border Style="{StaticResource Chip}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <TextBlock Text="GAME SERVER" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource Brush.TextMuted}" />
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource Text.Body}" FontSize="10.5" Margin="0,8,0,0"
+                               Text="Arming this asks your game's anti-cheat to watch the private test session and report detections back through the testing service." />
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Toggle monitoring" Style="{StaticResource Button.Primary}" Padding="11,6"
+                                Command="{Binding ToggleMonitoringCommand}" />
+                        <TextBlock Grid.Column="1" Text="{Binding StatusText}" Style="{StaticResource Text.Caption}"
+                                   Margin="10,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- integrity -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+                <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="SESSION INTEGRITY" Style="{StaticResource Text.Section}" Margin="0" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding IntegritySummary}" Style="{StaticResource Text.Caption}"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Integrity}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Path Data="{Binding Passed, Converter={StaticResource IntegrityIcon}}"
+                                          Fill="{Binding Passed, Converter={StaticResource IntegrityBrush}}"
+                                          Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Top" Margin="0,3,0,0" />
+                                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding Name}" FontSize="11" />
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- server detections -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,6">
+                        <TextBlock Text="SERVER DETECTIONS" Style="{StaticResource Text.Section}" Margin="0" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding SignalCountText}" Style="{StaticResource Text.Caption}"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                               Foreground="{StaticResource Brush.TextMuted}"
+                               Text="No detections reported for this session. Nothing is generated locally."
+                               Visibility="{Binding HasSignals, Converter={StaticResource BoolVisibilityInverse}}" />
+
+                    <ItemsControl ItemsSource="{Binding Signals}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#0DFFFFFF" CornerRadius="7" Padding="9,7" Margin="0,3">
+                                    <StackPanel>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Style="{StaticResource Chip}" Padding="5,1">
+                                                    <TextBlock Text="{Binding SeverityText}" FontSize="8.5" FontWeight="Bold"
+                                                               Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}" />
+                                                </Border>
+                                                <TextBlock Text="{Binding CategoryText}" Style="{StaticResource Text.Caption}"
+                                                           Margin="7,0,0,0" VerticalAlignment="Center" FontSize="9" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding TimeText}" Style="{StaticResource Text.Mono}"
+                                                       HorizontalAlignment="Right" FontSize="9" />
+                                        </Grid>
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Margin="0,5,0,0" />
+                                        <TextBlock Text="{Binding SubjectText}" Style="{StaticResource Text.Mono}" Margin="0,3,0,0"
+                                                   Visibility="{Binding HasSubject, Converter={StaticResource BoolVisibility}}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{Binding LastScanText, StringFormat={}last scan {0}}" Style="{StaticResource Text.Caption}"
+                               Margin="0,8,0,0" HorizontalAlignment="Right" FontSize="9" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
