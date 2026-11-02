@@ -70,19 +70,35 @@ public sealed class AppServices : IAsyncDisposable
     private static void SeedLocalReferenceDefaults(SettingsService settings)
     {
         var current = settings.Current;
-        var firstRun = string.IsNullOrWhiteSpace(current.ServerUrl)
+        var unsetProfile = string.IsNullOrWhiteSpace(current.ServerUrl)
             && string.IsNullOrWhiteSpace(current.KeyId)
             && string.IsNullOrWhiteSpace(current.ProtectedSecret);
-        if (!firstRun)
+        var explicitLoopbackProfile = Uri.TryCreate(current.ServerUrl, UriKind.Absolute, out var uri)
+            && uri.IsLoopback && uri.Port == 8791
+            && (string.IsNullOrWhiteSpace(current.KeyId)
+                || string.Equals(current.KeyId, "dte-dev-key", StringComparison.Ordinal));
+        if (!unsetProfile && !explicitLoopbackProfile)
         {
             return;
         }
 
-        current.ServerUrl = "http://127.0.0.1:8791";
-        current.KeyId = "dte-dev-key";
+        if (unsetProfile || string.IsNullOrWhiteSpace(current.ServerUrl))
+        {
+            current.ServerUrl = "http://127.0.0.1:8791";
+        }
+
+        if (string.IsNullOrWhiteSpace(current.KeyId))
+        {
+            current.KeyId = "dte-dev-key";
+        }
+
         current.AutoConnect = true;
-        // This is intentionally the documented local demo credential, not a production key.
-        settings.WriteSecret("dev-secret-change-me-0123456789abcdef");
+        if (string.IsNullOrWhiteSpace(current.ProtectedSecret))
+        {
+            // This is intentionally the documented local demo credential, not a production key.
+            settings.WriteSecret("dev-secret-change-me-0123456789abcdef");
+        }
+
         settings.Save();
     }
 
