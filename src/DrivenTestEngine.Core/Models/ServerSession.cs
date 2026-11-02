@@ -44,7 +44,7 @@ public sealed class ServerSession
         Capabilities.Exists(c => string.Equals(c, capability, StringComparison.OrdinalIgnoreCase));
 
     public bool AllowsTest(string testId) =>
-        AllowedTests.Count == 0 || AllowedTests.Exists(t => string.Equals(t, testId, StringComparison.OrdinalIgnoreCase));
+        AllowedTests.Exists(t => string.Equals(t, testId, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Client-side mirror of the rules the server must also enforce: a developer account,

@@ -14,6 +14,7 @@ const config = loadConfig({
   host: '127.0.0.1',
   keyId: `dte-local-${randomUUID().replaceAll('-', '')}`,
   secret: randomBytes(48).toString('base64'),
+  allowedTests: ['speed', 'jump', 'auto-catch', 'dime-accuracy'],
 });
 const { server, logs } = createServer(config);
 
@@ -29,6 +30,10 @@ function check(name, condition, detail = '') {
     console.log(`  FAIL  ${name}${detail ? ' — ' + detail : ''}`);
   }
 }
+
+const localDefaults = loadConfig({ port: 0, host: '127.0.0.1' });
+check('local reference defaults enable no game tests', localDefaults.allowedTests.length === 0);
+check('local reference default contains no placeholder Roblox user id', localDefaults.robloxUserId === '');
 
 async function call(base, method, path, { body = '', token, secret = config.secret, timestamp, nonce, keyId = config.keyId } = {}) {
   const ts = timestamp ?? String(Math.floor(Date.now() / 1000));

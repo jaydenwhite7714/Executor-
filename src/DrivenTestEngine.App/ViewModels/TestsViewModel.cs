@@ -84,9 +84,22 @@ public sealed class TestsViewModel : ObservableObject
 
         if (connected && session is not null)
         {
-            GateTitle = "Session verified";
-            GateMessage = "Runs execute inside the game server for " + session.Account.DisplayName +
-                          " · place " + session.TestSession.PlaceId + ". Results below are the server's own reports.";
+            var settings = _services.Settings.Current;
+            var localPreview = Uri.TryCreate(settings.ServerUrl, UriKind.Absolute, out var uri)
+                && uri.IsLoopback && uri.Port == 8791
+                && (settings.KeyId.StartsWith("dte-local-", StringComparison.Ordinal)
+                    || settings.KeyId == "dte-dev-key");
+            if (localPreview)
+            {
+                GateTitle = "Authenticated API · local preview";
+                GateMessage = "Signed communication with the local reference service is working. Roblox identity is not verified; no game tests are enabled.";
+            }
+            else
+            {
+                GateTitle = "Authenticated service session";
+                GateMessage = "Service authenticated for " + session.Account.DisplayName +
+                              " · place " + session.TestSession.PlaceId + ". Only tests explicitly enabled by the server can run.";
+            }
         }
         else if (snapshot.State == ConnectionState.Faulted)
         {

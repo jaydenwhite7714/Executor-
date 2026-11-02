@@ -17,6 +17,7 @@ public sealed class TestCardViewModel : ObservableObject
     private readonly AppServices _services;
     private readonly AsyncRelayCommand _runCommand;
     private readonly RelayCommand _cancelCommand;
+    private readonly RelayCommand _togglePreviewCommand;
 
     private CancellationTokenSource? _cancellation;
     private TestRunState _state = TestRunState.Unknown;
@@ -28,6 +29,8 @@ public sealed class TestCardViewModel : ObservableObject
     private bool _isRunning;
     private bool _isConnected;
     private bool _isAvailable = true;
+    private bool _previewEnabled;
+    private double _previewValue = 50;
 
     public TestCardViewModel(AppServices services, TestDefinition definition)
     {
@@ -45,6 +48,7 @@ public sealed class TestCardViewModel : ObservableObject
         };
 
         _cancelCommand = new RelayCommand(() => _cancellation?.Cancel(), () => IsRunning);
+        _togglePreviewCommand = new RelayCommand(() => PreviewEnabled = !PreviewEnabled, () => HasLocalPreview);
     }
 
     public TestDefinition Definition { get; }
@@ -66,6 +70,48 @@ public sealed class TestCardViewModel : ObservableObject
     public AsyncRelayCommand RunCommand => _runCommand;
 
     public RelayCommand CancelCommand => _cancelCommand;
+
+    /// <summary>Speed and jump expose UI-only controls; they never send values to Roblox.</summary>
+    public bool HasLocalPreview => Id is TestCatalog.Speed or TestCatalog.Jump;
+
+    public bool PreviewEnabled
+    {
+        get => _previewEnabled;
+        set
+        {
+            if (SetProperty(ref _previewEnabled, value))
+            {
+                OnPropertyChanged(nameof(PreviewToggleText), nameof(PreviewStateText));
+            }
+        }
+    }
+
+    public string PreviewToggleText => PreviewEnabled ? "ON" : "OFF";
+
+    public string PreviewStateText => PreviewEnabled ? "Local preview enabled · UI only" : "Local preview off · no game effect";
+
+    public RelayCommand TogglePreviewCommand => _togglePreviewCommand;
+
+    public double PreviewValue
+    {
+        get => _previewValue;
+        set
+        {
+            var clamped = Math.Clamp(value, 0, 100);
+            if (SetProperty(ref _previewValue, clamped))
+            {
+                OnPropertyChanged(nameof(PreviewValueText));
+            }
+        }
+    }
+
+    public string PreviewValueText => ((int)Math.Round(PreviewValue)).ToString(CultureInfo.InvariantCulture) + "% (UI only)";
+
+    public bool IsUnsupportedIntegration => Id is TestCatalog.AutoCatch or TestCatalog.DimeAccuracy;
+
+    public string IntegrationStatus => IsUnsupportedIntegration
+        ? "Unavailable · requires Driven Football server integration"
+        : string.Empty;
 
     public bool HasParameter => Definition.Parameter is not null;
 

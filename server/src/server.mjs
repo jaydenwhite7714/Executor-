@@ -28,16 +28,17 @@ const DEFAULTS = {
   host: '127.0.0.1',
   keyId: 'dte-dev-key',
   secret: 'dev-secret-change-me-0123456789abcdef',
-  robloxUserId: '0000000000',
-  displayName: 'Driven Developer',
-  placeId: '0000000000',
-  universeId: '0000000000',
+  robloxUserId: '',
+  displayName: 'Local reference (demo only)',
+  placeId: '',
+  universeId: '',
   sessionId: 'private-test-session',
   serverInstanceId: 'reference-instance',
   isDeveloper: true,
   isPrivateSession: true,
   sessionTtlSeconds: 900,
-  allowedTests: ['speed', 'jump', 'auto-catch', 'dime-accuracy'],
+  // No game tests are enabled until the owner wires real server-side handlers.
+  allowedTests: [],
 };
 
 export function loadConfig(overrides = {}) {

@@ -79,6 +79,7 @@ public sealed class ConnectionViewModel : ObservableObject
         {
             if (SetProperty(ref _serverUrl, value))
             {
+                OnPropertyChanged(nameof(IsLocalReferenceProfile), nameof(AccountText), nameof(DeveloperBadgeText), nameof(StateText));
                 _services.Settings.Update(s => s.ServerUrl = value.Trim());
                 if (!IsConnected)
                 {
@@ -95,6 +96,7 @@ public sealed class ConnectionViewModel : ObservableObject
         {
             if (SetProperty(ref _keyId, value))
             {
+                OnPropertyChanged(nameof(IsLocalReferenceProfile), nameof(AccountText), nameof(DeveloperBadgeText), nameof(StateText));
                 _services.Settings.Update(s => s.KeyId = value.Trim());
                 if (!IsConnected)
                 {
@@ -181,7 +183,8 @@ public sealed class ConnectionViewModel : ObservableObject
 
     public string StateText => State switch
     {
-        ConnectionState.Connected => "Session verified",
+        ConnectionState.Connected when IsLocalReferenceProfile => "Authenticated API · local preview",
+        ConnectionState.Connected => "Authenticated service session",
         ConnectionState.Connecting => "Handshaking with your testing service…",
         ConnectionState.Disconnecting => "Closing session…",
         ConnectionState.Faulted => "Connection faulted",
@@ -259,9 +262,15 @@ public sealed class ConnectionViewModel : ObservableObject
 
     public bool HasSession => _session is not null;
 
+    public bool IsLocalReferenceProfile => Uri.TryCreate(_serverUrl, UriKind.Absolute, out var uri)
+        && uri.IsLoopback && uri.Port == 8791
+        && (_keyId.StartsWith("dte-local-", StringComparison.Ordinal) || _keyId == "dte-dev-key");
+
     public string AccountText => _session is null
         ? "—"
-        : _session.Account.DisplayName + " · " + _session.Account.RobloxUserId;
+        : IsLocalReferenceProfile
+            ? "Local reference · Roblox identity not verified"
+            : _session.Account.DisplayName + " · " + _session.Account.RobloxUserId;
 
     public string PlaceText => string.IsNullOrWhiteSpace(_session?.TestSession.PlaceId) ? "—" : _session!.TestSession.PlaceId;
 
@@ -277,9 +286,11 @@ public sealed class ConnectionViewModel : ObservableObject
 
     public string ServerVersionText => string.IsNullOrWhiteSpace(_session?.ServerVersion) ? "—" : _session!.ServerVersion;
 
-    public string DeveloperBadgeText => _session?.Account.IsDeveloper == true
-        ? "DEVELOPER VERIFIED"
-        : "NOT VERIFIED";
+    public string DeveloperBadgeText => IsLocalReferenceProfile
+        ? "LOCAL DEMO · NOT VERIFIED"
+        : _session?.Account.IsDeveloper == true
+            ? "DEVELOPER VERIFIED"
+            : "NOT VERIFIED";
 
     public bool KeepOnTop
     {
@@ -487,8 +498,12 @@ public sealed class ConnectionViewModel : ObservableObject
     {
         IsBusy = snapshot.State == ConnectionState.Connecting;
         State = snapshot.State;
-        StatusText = snapshot.Message;
-        StatusDetail = snapshot.Failure?.DisplayMessage ?? snapshot.Message;
+        StatusText = snapshot.IsConnected && IsLocalReferenceProfile
+            ? "Authenticated API communication · local preview"
+            : snapshot.Message;
+        StatusDetail = snapshot.IsConnected && IsLocalReferenceProfile
+            ? "Signed health check and handshake accepted. This local demo does not verify Roblox identity or game access."
+            : snapshot.Failure?.DisplayMessage ?? snapshot.Message;
         ErrorText = snapshot.State == ConnectionState.Faulted ? snapshot.Failure?.DisplayMessage ?? snapshot.Message : null;
         Session = snapshot.Session;
 

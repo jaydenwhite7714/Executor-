@@ -73,6 +73,45 @@
 
                                 <TextBlock Text="{Binding Description}" Style="{StaticResource Text.Body}" FontSize="11" Margin="0,9,0,0" />
 
+                                <!-- Explicitly local UI controls; they do not affect Roblox or emit test results. -->
+                                <Border Margin="0,9,0,0" Padding="9" CornerRadius="8"
+                                        Background="#141B24" BorderBrush="{StaticResource Brush.Border}" BorderThickness="1"
+                                        Visibility="{Binding HasLocalPreview, Converter={StaticResource BoolVisibility}}">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="LOCAL PREVIEW · NOT CONNECTED TO ROBLOX" Style="{StaticResource Text.Caption}"
+                                                       Foreground="{StaticResource Brush.Warning}" VerticalAlignment="Center" />
+                                            <Button Grid.Column="1" Content="{Binding PreviewToggleText}" Command="{Binding TogglePreviewCommand}"
+                                                    Style="{StaticResource Button.Ghost}" MinWidth="54" HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <TextBlock Text="{Binding PreviewStateText}" Style="{StaticResource Text.Caption}" Margin="0,5,0,2" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Slider Minimum="0" Maximum="100" Value="{Binding PreviewValue}" IsSnapToTickEnabled="True"
+                                                    TickFrequency="1" SmallChange="1" LargeChange="10" />
+                                            <TextBlock Grid.Column="1" Text="{Binding PreviewValueText}" Style="{StaticResource Text.Mono}"
+                                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,9,0,0" Padding="8" CornerRadius="7" Background="#1C1711"
+                                        Visibility="{Binding IsUnsupportedIntegration, Converter={StaticResource BoolVisibility}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding IntegrationStatus}" Style="{StaticResource Text.Caption}"
+                                                   Foreground="{StaticResource Brush.Warning}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                        <Button Content="DISABLED" IsEnabled="False" Style="{StaticResource Button.Ghost}"
+                                                MinWidth="74" Margin="8,0,0,0" />
+                                    </StackPanel>
+                                </Border>
+
                                 <!-- parameter -->
                                 <Grid Margin="0,9,0,0" Visibility="{Binding HasParameter, Converter={StaticResource BoolVisibility}}">
                                     <Grid.ColumnDefinitions>
@@ -155,7 +194,7 @@
             </ItemsControl>
 
             <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="2,2,0,0" FontSize="9.5">
-                Results come only from your game server. If a run is refused, the reason the server returned is shown verbatim.
+                Speed/Jump preview sliders only change local UI state and do not affect Roblox. Server runs stay disabled until the service explicitly enables an implemented game integration.
             </TextBlock>
 
         </StackPanel>
