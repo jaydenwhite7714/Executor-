@@ -52,8 +52,10 @@ always-on-top toggle, reduce-motion switch, geometry remembered between launches
 
 - Windows 10 1809+ or Windows 11
 - [.NET 8 SDK](https://dot.net) to build, .NET 8 Desktop Runtime to run the framework-dependent build
-- A testing service implementing [protocol v1](docs/PROTOCOL.md) — `server/` is a working reference
-  for the authentication half
+- [Node.js 18 LTS or newer](https://nodejs.org/) for the bundled local reference service. The publish
+  includes its service files and DTE starts it automatically; Node.js itself must be installed.
+- A testing service implementing [protocol v1](docs/PROTOCOL.md) for real game-side testing — the
+  `server/` reference is authentication-only
 
 ## Build
 
@@ -76,8 +78,8 @@ The same steps run in CI (`.github/workflows/build.yml`, `windows-latest`).
 
 ## First run
 
-1. For a local protocol check, start the reference service: `cd server && npm start`.
-2. On first launch, the overlay seeds `http://127.0.0.1:8791`, `dte-dev-key`, and the documented
+1. Install Node.js 18 LTS or newer once. On first launch, DTE starts the bundled loopback service.
+2. On a clean profile, the overlay seeds `http://127.0.0.1:8791`, `dte-dev-key`, and the documented
    **demo-only** signing secret. It protects the secret with Windows DPAPI and enables auto-connect.
    When the service starts later, the overlay retries every 10 seconds while Auto-connect is on.
 3. **Link** shows the health/handshake outcome. For another service, enter its URL and credentials;

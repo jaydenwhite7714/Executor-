@@ -17,6 +17,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Test reference service and signed handshake
+        run: npm test
+        working-directory: server
+
       - name: Restore
         run: dotnet restore DrivenTestEngine.sln
 
@@ -25,6 +34,12 @@ jobs:
 
       - name: Publish
         run: dotnet publish src\DrivenTestEngine.App\DrivenTestEngine.App.csproj -c Release -r win-x64 --self-contained false -o publish
+
+      - name: Verify bundled local service files
+        shell: pwsh
+        run: |
+          if (!(Test-Path 'publish/server/src/server.mjs')) { throw 'Bundled reference server entry point missing from publish output.' }
+          if (!(Test-Path 'publish/server/src/signature.mjs')) { throw 'Bundled signature module missing from publish output.' }
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

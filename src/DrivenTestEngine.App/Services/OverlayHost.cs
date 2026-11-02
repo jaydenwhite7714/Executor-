@@ -15,6 +15,7 @@ public sealed class OverlayHost : IDisposable
     private readonly ShellViewModel _shell;
     private readonly OverlayWindow _overlay;
     private readonly EdgeTabWindow _tab;
+    private readonly LocalReferenceService _localService = new();
     private bool _disposed;
     private readonly CancellationTokenSource _autoConnectCts = new();
 
@@ -55,6 +56,13 @@ public sealed class OverlayHost : IDisposable
             _overlay.Show();
         }
 
+        var serviceError = _localService.StartIfNeeded(_services.Settings.Current);
+        if (serviceError is not null)
+        {
+            _services.Log.Error(DetectionCategory.Client, "[client] Local service startup failed", serviceError);
+            MessageBox.Show(serviceError, "Driven Test Engine — local service setup", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
         if (_services.Settings.Current.AutoConnect)
         {
             _shell.Connection.ConnectCommand.Execute(null);
@@ -73,6 +81,12 @@ public sealed class OverlayHost : IDisposable
                     || !_services.Settings.Current.AutoConnect)
                 {
                     return;
+                }
+
+                var startError = _localService.StartIfNeeded(_services.Settings.Current);
+                if (startError is not null)
+                {
+                    _services.Log.Warn(DetectionCategory.Client, "[client] Local service retry could not start", startError);
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -145,6 +159,7 @@ public sealed class OverlayHost : IDisposable
         _disposed = true;
         _autoConnectCts.Cancel();
         _autoConnectCts.Dispose();
+        _localService.Dispose();
         Persist();
         CloseTabWindow();
     }

@@ -14,6 +14,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DrivenTestEngine.Core\DrivenTestEngine.Core.csproj" />
+    <Content Include="..\..\server\**\*">
+      <Link>server\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
