@@ -4,10 +4,17 @@
  * Run with: npm test   (from ./server)
  */
 import { createServer, loadConfig } from './src/server.mjs';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { newNonce, computeSignature, canonicalRequest, sha256Hex } from './src/signature.mjs';
 
-const config = loadConfig({ port: 0, host: '127.0.0.1' });
+// Exercise the same generated-per-install credential shape used by the desktop local profile.
+const config = loadConfig({
+  port: 0,
+  host: '127.0.0.1',
+  keyId: `dte-local-${randomUUID().replaceAll('-', '')}`,
+  secret: randomBytes(48).toString('base64'),
+});
 const { server, logs } = createServer(config);
 
 let passed = 0;

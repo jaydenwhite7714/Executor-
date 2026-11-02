@@ -16,10 +16,11 @@ secret and `AutoConnect` as empty/false. `OverlayHost.Start()` only attempted a 
 saved `AutoConnect` flag was already true. Thus a running service on port 8791 was ignored on a fresh
 install unless the user entered all credentials and enabled automatic connection themselves. A
 second usability defect: auto-connect was a single attempt, so starting the app before the service
-left it offline indefinitely. This change seeds the documented **loopback-only reference profile**
-on a clean install (secret protected with Windows DPAPI) and retries at 10-second intervals while
-AutoConnect is enabled. Existing non-empty user configuration is not overwritten. The bundled
-reference credential is public/demo-only and must never be used outside loopback.
+left it offline indefinitely. DTE now provisions a per-install random key id and secret for the
+loopback-only profile, protects the secret with DPAPI, starts the bundled service, and retries every
+10 seconds while AutoConnect is enabled. Non-loopback profiles are not overwritten. These local
+credentials authenticate only the local reference service; they do not establish Roblox identity or
+authorize production testing.
 
 If this fix does not resolve a particular installation, use Link → Test Service and inspect the
 specific reported failure. `401 Signature mismatch` means secret/config mismatch; `clock_skew` means

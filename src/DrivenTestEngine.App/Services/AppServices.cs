@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Cryptography;
 using DrivenTestEngine.Core.Engine;
 using DrivenTestEngine.Core.History;
 using DrivenTestEngine.Core.Logging;
@@ -64,8 +65,8 @@ public sealed class AppServices : IAsyncDisposable
     }
 
     /// <summary>
-    /// First-run convenience for the bundled loopback-only reference service. Never applies to
-    /// non-loopback URLs; the sample secret is public and must not be used in a deployed service.
+    /// Provisions per-install credentials for the bundled loopback-only service. The secret is
+    /// random and DPAPI protected; this is not an identity credential for a deployed game service.
     /// </summary>
     private static void SeedLocalReferenceDefaults(SettingsService settings)
     {
@@ -73,11 +74,12 @@ public sealed class AppServices : IAsyncDisposable
         var unsetProfile = string.IsNullOrWhiteSpace(current.ServerUrl)
             && string.IsNullOrWhiteSpace(current.KeyId)
             && string.IsNullOrWhiteSpace(current.ProtectedSecret);
-        var explicitLoopbackProfile = Uri.TryCreate(current.ServerUrl, UriKind.Absolute, out var uri)
-            && uri.IsLoopback && uri.Port == 8791
-            && (string.IsNullOrWhiteSpace(current.KeyId)
-                || string.Equals(current.KeyId, "dte-dev-key", StringComparison.Ordinal));
-        if (!unsetProfile && !explicitLoopbackProfile)
+        var isLoopback = Uri.TryCreate(current.ServerUrl, UriKind.Absolute, out var uri)
+            && uri.IsLoopback && uri.Port == 8791;
+        var localKey = string.IsNullOrWhiteSpace(current.KeyId)
+            || string.Equals(current.KeyId, "dte-dev-key", StringComparison.Ordinal)
+            || current.KeyId.StartsWith("dte-local-", StringComparison.Ordinal);
+        if (!unsetProfile && (!isLoopback || !localKey))
         {
             return;
         }
@@ -87,16 +89,22 @@ public sealed class AppServices : IAsyncDisposable
             current.ServerUrl = "http://127.0.0.1:8791";
         }
 
-        if (string.IsNullOrWhiteSpace(current.KeyId))
+        // Rotate the old public demo key and create a unique, per-install identifier.
+        if (string.IsNullOrWhiteSpace(current.KeyId)
+            || string.Equals(current.KeyId, "dte-dev-key", StringComparison.Ordinal))
         {
-            current.KeyId = "dte-dev-key";
+            current.KeyId = "dte-local-" + Guid.NewGuid().ToString("N");
         }
 
         current.AutoConnect = true;
-        if (string.IsNullOrWhiteSpace(current.ProtectedSecret))
+        if (string.IsNullOrWhiteSpace(current.ProtectedSecret)
+            || string.Equals(settings.ReadSecret(), "dev-secret-change-me-0123456789abcdef", StringComparison.Ordinal))
         {
-            // This is intentionally the documented local demo credential, not a production key.
-            settings.WriteSecret("dev-secret-change-me-0123456789abcdef");
+            var secret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+            if (!settings.WriteSecret(secret))
+            {
+                throw new InvalidOperationException(settings.SecretWarning ?? "Could not protect the generated local credential with Windows DPAPI.");
+            }
         }
 
         settings.Save();

@@ -10,11 +10,16 @@ internal sealed class LocalReferenceService : IDisposable
 {
     private Process? _process;
 
-    public string? StartIfNeeded(AppSettings settings)
+    public string? StartIfNeeded(AppSettings settings, string? sharedSecret)
     {
         if (!IsLocalReferenceProfile(settings))
         {
             return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(sharedSecret))
+        {
+            return "The local service credential could not be read from Windows DPAPI. Open the Connection settings and re-enter or regenerate the local profile.";
         }
 
         if (CanConnect())
@@ -41,8 +46,8 @@ internal sealed class LocalReferenceService : IDisposable
             start.ArgumentList.Add(entryPoint);
             start.Environment["DTE_HOST"] = "127.0.0.1";
             start.Environment["DTE_PORT"] = "8791";
-            start.Environment["DTE_KEY_ID"] = "dte-dev-key";
-            start.Environment["DTE_SECRET"] = "dev-secret-change-me-0123456789abcdef";
+            start.Environment["DTE_KEY_ID"] = settings.KeyId;
+            start.Environment["DTE_SECRET"] = sharedSecret;
             _process = Process.Start(start);
             return _process is null
                 ? "Could not start the local reference service. Install Node.js 18 or newer, then restart DTE."
@@ -87,7 +92,8 @@ internal sealed class LocalReferenceService : IDisposable
         Uri.TryCreate(settings.ServerUrl, UriKind.Absolute, out var uri)
         && uri.IsLoopback
         && uri.Port == 8791
-        && string.Equals(settings.KeyId, "dte-dev-key", StringComparison.Ordinal);
+        && (settings.KeyId?.StartsWith("dte-local-", StringComparison.Ordinal) == true
+            || string.Equals(settings.KeyId, "dte-dev-key", StringComparison.Ordinal));
 
     private static bool CanConnect()
     {

@@ -37,11 +37,11 @@ this repository that does any of that, by design. See
 
 | | |
 | --- | --- |
-| **Speed Test** | Server samples the avatar's velocity curve; peak + average reported back |
-| **Jump Test** | Apex height, airtime and cooldown across N attempts |
-| **Auto Catch Test** | Scripted catch windows scored by your automation detection |
-| **Dime Accuracy Test** | Precision placement scoring in your drill |
-| **Anti-Cheat Monitor** | Server detections plus a real, local session-integrity checklist |
+| **Speed Test** | UI/protocol entry exists; real game execution requires your server integration |
+| **Jump Test** | UI/protocol entry exists; real game execution requires your server integration |
+| **Auto Catch Test** | Not implemented; requires Driven Football catch/detector hooks |
+| **Dime Accuracy Test** | Not implemented; requires Driven Football's real drill scorer |
+| **Anti-Cheat Monitor** | UI can display service events; reference service has no real detector feed |
 | **Live Detection Logs** | Client + server entries, level filter, search, copy, auto-scroll |
 | **Test History** | Local archive with pass rate, filters, CSV export |
 
@@ -79,16 +79,18 @@ The same steps run in CI (`.github/workflows/build.yml`, `windows-latest`).
 ## First run
 
 1. Install Node.js 18 LTS or newer once. On first launch, DTE starts the bundled loopback service.
-2. On a clean profile, the overlay seeds `http://127.0.0.1:8791`, `dte-dev-key`, and the documented
-   **demo-only** signing secret. It protects the secret with Windows DPAPI and enables auto-connect.
-   When the service starts later, the overlay retries every 10 seconds while Auto-connect is on.
-3. **Link** shows the health/handshake outcome. For another service, enter its URL and credentials;
-   existing preferences are never overwritten by the first-run defaults.
-4. The reference server is authentication-only: it returns `501 not_implemented` for test execution.
-   It self-asserts demo developer/private-session claims and is not production authentication.
+2. The app provisions a per-install key id and cryptographically random secret, protects the secret
+   with Windows DPAPI, and enables auto-connect. The generated credential is passed only to the
+   loopback service process; it is not a Roblox identity or a production credential.
+3. DTE retries every 10 seconds while Auto-connect is enabled; the Link page reports connection or
+   handshake errors. Existing non-loopback service profiles are not changed.
+4. **Link** shows the health/handshake outcome. For another service, its URL and authentication
+   must be provisioned by that service's operator; DTE cannot invent production trust credentials.
+5. The reference server is authentication-only: it returns `501 not_implemented` for test execution.
+   Its local demo account/private-session claims are not Roblox identity proof or production auth.
 
-The bundled credential is public and loopback-only; never expose the reference service or reuse that
-secret for a deployed service. The Windows secret is protected at rest with current-user DPAPI. See
+The generated local credential is unique to this install, protected at rest with current-user DPAPI,
+and only supplied to the loopback reference process. See
 [`docs/IMPLEMENTATION-PLAN.md`](docs/IMPLEMENTATION-PLAN.md) for the inspected bridge gaps and staged
 plan for legitimate game integration.
 

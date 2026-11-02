@@ -56,7 +56,7 @@ public sealed class OverlayHost : IDisposable
             _overlay.Show();
         }
 
-        var serviceError = _localService.StartIfNeeded(_services.Settings.Current);
+        var serviceError = _localService.StartIfNeeded(_services.Settings.Current, _services.Settings.ReadSecret());
         if (serviceError is not null)
         {
             _services.Log.Error(DetectionCategory.Client, "[client] Local service startup failed", serviceError);
@@ -83,7 +83,7 @@ public sealed class OverlayHost : IDisposable
                     return;
                 }
 
-                var startError = _localService.StartIfNeeded(_services.Settings.Current);
+                var startError = _localService.StartIfNeeded(_services.Settings.Current, _services.Settings.ReadSecret());
                 if (startError is not null)
                 {
                     _services.Log.Warn(DetectionCategory.Client, "[client] Local service retry could not start", startError);
