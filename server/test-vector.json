@@ -1,0 +1,12 @@
+{
+  "description": "Known-answer vector for DTE protocol v1 request signing (docs/PROTOCOL.md section 2).",
+  "secret": "dev-secret-change-me-0123456789abcdef",
+  "method": "POST",
+  "pathAndQuery": "/v1/session/handshake",
+  "timestamp": "1767225600",
+  "nonce": "9f2c4e6a8b0d1f3579acebdf02468ace",
+  "body": "{\"clientId\":\"abc123\",\"clientVersion\":\"1.0.0\",\"platform\":\"windows\",\"protocol\":\"1.0\",\"requestedScope\":\"tests:run\"}",
+  "bodySha256Hex": "8c635d327b2cb1ef4b84bf710c2a4f5c94302df80f464af608f7bf54b278c285",
+  "canonical": "POST\n/v1/session/handshake\n1767225600\n9f2c4e6a8b0d1f3579acebdf02468ace\n8c635d327b2cb1ef4b84bf710c2a4f5c94302df80f464af608f7bf54b278c285",
+  "signature": "79dea419466d228d93d074b8f01eed200fea7391bb9abd078bf9febb3b0c87ab"
+}

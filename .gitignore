@@ -1,0 +1,18 @@
+# Build output
+bin/
+obj/
+publish/
+artifacts/
+*.user
+*.suo
+.vs/
+*.binlog
+*.log
+
+# Local tooling
+.tooling/
+node_modules/
+
+# OS noise
+.DS_Store
+Thumbs.db
