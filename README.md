@@ -76,13 +76,19 @@ The same steps run in CI (`.github/workflows/build.yml`, `windows-latest`).
 
 ## First run
 
-1. Start your testing service (for a local check: `cd server && npm start`).
-2. Open **Link** in the overlay and enter the server URL, key id and signing secret.
-3. **Connect** — the overlay stays `Offline` until the signed handshake returns a token for a
-   developer account inside a private test session. Nothing is cached before that.
-4. **Tests** unlocks the four tiles. Results, metrics, checks and refusals are shown verbatim.
+1. For a local protocol check, start the reference service: `cd server && npm start`.
+2. On first launch, the overlay seeds `http://127.0.0.1:8791`, `dte-dev-key`, and the documented
+   **demo-only** signing secret. It protects the secret with Windows DPAPI and enables auto-connect.
+   When the service starts later, the overlay retries every 10 seconds while Auto-connect is on.
+3. **Link** shows the health/handshake outcome. For another service, enter its URL and credentials;
+   existing preferences are never overwritten by the first-run defaults.
+4. The reference server is authentication-only: it returns `501 not_implemented` for test execution.
+   It self-asserts demo developer/private-session claims and is not production authentication.
 
-The signing secret is encrypted with Windows DPAPI (current user) and never written in clear text.
+The bundled credential is public and loopback-only; never expose the reference service or reuse that
+secret for a deployed service. The Windows secret is protected at rest with current-user DPAPI. See
+[`docs/IMPLEMENTATION-PLAN.md`](docs/IMPLEMENTATION-PLAN.md) for the inspected bridge gaps and staged
+plan for legitimate game integration.
 
 ## Repository map
 

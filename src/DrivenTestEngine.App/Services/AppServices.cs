@@ -42,6 +42,7 @@ public sealed class AppServices : IAsyncDisposable
 
         var settings = new SettingsService(AppPaths.SettingsFile);
         settings.Load();
+        SeedLocalReferenceDefaults(settings);
         settings.EnsureClientId();
 
         var log = new DetectionLogStore(1500, AppPaths.LogFolder);
@@ -60,6 +61,29 @@ public sealed class AppServices : IAsyncDisposable
         var services = new AppServices(settings, log, history, engine) { VersionText = version };
         services.ReconfigureEngine();
         return services;
+    }
+
+    /// <summary>
+    /// First-run convenience for the bundled loopback-only reference service. Never applies to
+    /// non-loopback URLs; the sample secret is public and must not be used in a deployed service.
+    /// </summary>
+    private static void SeedLocalReferenceDefaults(SettingsService settings)
+    {
+        var current = settings.Current;
+        var firstRun = string.IsNullOrWhiteSpace(current.ServerUrl)
+            && string.IsNullOrWhiteSpace(current.KeyId)
+            && string.IsNullOrWhiteSpace(current.ProtectedSecret);
+        if (!firstRun)
+        {
+            return;
+        }
+
+        current.ServerUrl = "http://127.0.0.1:8791";
+        current.KeyId = "dte-dev-key";
+        current.AutoConnect = true;
+        // This is intentionally the documented local demo credential, not a production key.
+        settings.WriteSecret("dev-secret-change-me-0123456789abcdef");
+        settings.Save();
     }
 
     public ClientCredentials BuildCredentials()

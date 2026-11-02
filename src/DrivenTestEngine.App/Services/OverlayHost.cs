@@ -16,6 +16,7 @@ public sealed class OverlayHost : IDisposable
     private readonly OverlayWindow _overlay;
     private readonly EdgeTabWindow _tab;
     private bool _disposed;
+    private readonly CancellationTokenSource _autoConnectCts = new();
 
     public OverlayHost(AppServices services)
     {
@@ -54,9 +55,38 @@ public sealed class OverlayHost : IDisposable
             _overlay.Show();
         }
 
-        if (_services.Settings.Current.AutoConnect && !_shell.Connection.IsConnected)
+        if (_services.Settings.Current.AutoConnect)
         {
             _shell.Connection.ConnectCommand.Execute(null);
+            _ = RetryAutoConnectAsync(_autoConnectCts.Token);
+        }
+    }
+
+    private async Task RetryAutoConnectAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested && !_shell.Connection.IsConnected)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false);
+                if (cancellationToken.IsCancellationRequested || _shell.Connection.IsConnected
+                    || !_services.Settings.Current.AutoConnect)
+                {
+                    return;
+                }
+
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (!_shell.Connection.IsConnected)
+                    {
+                        _shell.Connection.ConnectCommand.Execute(null);
+                    }
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal on application shutdown.
         }
     }
 
@@ -113,6 +143,8 @@ public sealed class OverlayHost : IDisposable
         }
 
         _disposed = true;
+        _autoConnectCts.Cancel();
+        _autoConnectCts.Dispose();
         Persist();
         CloseTabWindow();
     }
