@@ -6,7 +6,7 @@ using DrivenTestEngine.Core.Settings;
 namespace DrivenTestEngine.App.Services;
 
 /// <summary>Starts the bundled, loopback-only reference service when the local profile is selected.</summary>
-internal sealed class LocalReferenceService : IDisposable
+public sealed class LocalReferenceService : IDisposable
 {
     private Process? _process;
 

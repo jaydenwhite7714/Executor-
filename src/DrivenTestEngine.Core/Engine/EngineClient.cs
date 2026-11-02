@@ -1,3 +1,4 @@
+using System.Net.Http;
 using DrivenTestEngine.Core.History;
 using DrivenTestEngine.Core.Logging;
 using DrivenTestEngine.Core.Models;
@@ -249,6 +250,18 @@ public sealed class EngineClient : IAsyncDisposable
         catch (OperationCanceledException)
         {
             SetState(ConnectionState.Disconnected, "Connection cancelled.", null);
+            return Snapshot;
+        }
+        catch (Exception ex)
+        {
+            var kind = ex is HttpRequestException ? TransportFailureKind.Network : TransportFailureKind.Protocol;
+            var diagnostic = ex.GetType().Name + " (0x" + ex.HResult.ToString("X8", System.Globalization.CultureInfo.InvariantCulture) + "): " + ex.Message;
+            _log.Error(DetectionCategory.Client, "[client] Connection attempt threw unexpectedly", diagnostic);
+            var failure = TransportFailure.Create(
+                kind,
+                "The connection attempt failed before a complete handshake response was processed.",
+                diagnostic);
+            SetState(ConnectionState.Faulted, failure.DisplayMessage, failure);
             return Snapshot;
         }
         finally

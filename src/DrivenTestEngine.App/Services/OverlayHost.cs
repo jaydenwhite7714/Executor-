@@ -60,12 +60,17 @@ public sealed class OverlayHost : IDisposable
         if (serviceError is not null)
         {
             _services.Log.Error(DetectionCategory.Client, "[client] Local service startup failed", serviceError);
+            _shell.Connection.ReportLocalServiceError(serviceError);
             MessageBox.Show(serviceError, "Driven Test Engine — local service setup", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         if (_services.Settings.Current.AutoConnect)
         {
-            _shell.Connection.ConnectCommand.Execute(null);
+            if (serviceError is null)
+            {
+                _shell.Connection.ConnectCommand.Execute(null);
+            }
+
             _ = RetryAutoConnectAsync(_autoConnectCts.Token);
         }
     }
@@ -87,6 +92,8 @@ public sealed class OverlayHost : IDisposable
                 if (startError is not null)
                 {
                     _services.Log.Warn(DetectionCategory.Client, "[client] Local service retry could not start", startError);
+                    await Application.Current.Dispatcher.InvokeAsync(() => _shell.Connection.ReportLocalServiceError(startError));
+                    continue;
                 }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>

@@ -342,6 +342,13 @@ public sealed class ConnectionViewModel : ObservableObject
     }
 
     /// <summary>Writes the in-memory secret through DPAPI and saves the rest of the form.</summary>
+    public void ReportLocalServiceError(string message)
+    {
+        ErrorText = message;
+        StatusText = "Local service unavailable";
+        StatusDetail = message;
+    }
+
     public void Persist()
     {
         var secret = _secret?.Trim() ?? string.Empty;

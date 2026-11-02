@@ -23,9 +23,29 @@ public sealed class TransportFailure
     public int? HttpStatus { get; init; }
     public string? Hint { get; init; }
 
-    public string DisplayMessage => string.IsNullOrWhiteSpace(Hint)
-        ? Message
-        : Message + " " + Hint;
+    public string DisplayMessage
+    {
+        get
+        {
+            var diagnostic = Message;
+            if (HttpStatus.HasValue)
+            {
+                diagnostic += " (HTTP " + HttpStatus.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+            }
+
+            if (!string.IsNullOrWhiteSpace(ServerCode))
+            {
+                diagnostic += " [" + ServerCode + "]";
+            }
+
+            if (!string.IsNullOrWhiteSpace(Hint))
+            {
+                diagnostic += " " + Hint;
+            }
+
+            return diagnostic;
+        }
+    }
 
     public static TransportFailure Create(
         TransportFailureKind kind,

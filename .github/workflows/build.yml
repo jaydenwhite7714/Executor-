@@ -32,6 +32,9 @@ jobs:
       - name: Build
         run: dotnet build DrivenTestEngine.sln -c Release --no-restore -v minimal
 
+      - name: Runtime smoke test: bundled service startup, conflict, and signed handshake
+        run: dotnet run --project tests\DrivenTestEngine.Smoke\DrivenTestEngine.Smoke.csproj -c Release --no-build
+
       - name: Publish
         run: dotnet publish src\DrivenTestEngine.App\DrivenTestEngine.App.csproj -c Release -r win-x64 --self-contained false -o publish
 
